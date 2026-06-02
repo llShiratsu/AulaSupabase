@@ -1,20 +1,5 @@
 # AulaSupabase
 
-Mini app de lista de tarefas conectado a um banco **Supabase** na nuvem.
-Um único arquivo HTML, sem instalação e sem build — roda direto no navegador.
-
-> Projeto da aula prática de **Cloud**: mostra na prática como um front-end
-> conversa direto com um backend na nuvem (banco + API automática).
-
----
-
-## ✅ Pré-requisitos
-
-- Uma conta gratuita no [Supabase](https://supabase.com) (não pede cartão).
-- Um navegador (Chrome, Edge, Firefox...) **com internet** — o app carrega a
-  biblioteca do Supabase por CDN.
-
----
 
 ## 🚀 Passo a passo
 
@@ -62,7 +47,7 @@ const SUPABASE_ANON_KEY = "";   // ex: sb_publishable_xxxxxxxxxxxx
 Você pega os dois valores no painel do Supabase, no botão verde **Connect**
 (no topo da página). Cole cada um **entre as aspas** e salve.
 
-> 🔑 Use a chave **pública** (`sb_publishable_...`). **Nunca** use a `service_role`.
+> 🔑 Use a chave **pública** (`sb_publishable_...`).
 
 ### 5. Abra o app
 Dê um **duplo clique** no `tarefas.html`. Ele abre no navegador e já mostra,
@@ -74,15 +59,9 @@ adiciona, conclui e apaga tarefas — tudo gravando no seu banco. 🎉
 
 | Sintoma | Causa provável | Solução |
 |---|---|---|
-| Abre no Bloco de Notas, não no navegador | Arquivo salvo como `.txt` | Salvar como **Todos os arquivos** com a terminação **`.html`** |
 | Aparece o banner amarelo "Falta configurar" | URL/chave em branco | Preencher as duas linhas do passo 4 |
 | Lista abre vazia / erro de permissão | Faltam as policies (RLS) | Rodar o SQL do passo 3 |
 | Lista vazia mesmo com policies | Nome da tabela diferente | A tabela precisa se chamar **`tarefas`** |
 
 ---
 
-## 🛠️ Tecnologias
-
-- **Supabase** — banco PostgreSQL + API REST automática na nuvem
-- **HTML + JavaScript** puro (sem framework, sem build)
-- Biblioteca `@supabase/supabase-js` via CDN
