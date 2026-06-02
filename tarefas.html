@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Minhas Tarefas · Supabase</title>
+
+<!-- Cliente oficial do Supabase, carregado por CDN (sem instalar nada) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet" />
+
+<style>
+  :root {
+    --bg:        #141414;
+    --bg-2:      #1b1b1b;
+    --panel:     #1f1f1f;
+    --panel-2:   #262626;
+    --line:      #333333;
+    --line-soft: #2a2a2a;
+    --green:     #3ecf8e;
+    --green-d:   #2bb377;
+    --green-dim: rgba(62, 207, 142, 0.12);
+    --text:      #ededed;
+    --muted:     #8b8b8b;
+    --danger:    #f1646c;
+    --warn-bg:   #2a2410;
+    --warn-line: #5c4d12;
+    --warn-tx:   #e6c64d;
+    --font-d: "Sora", sans-serif;
+    --font-b: "Figtree", sans-serif;
+    --font-m: "JetBrains Mono", monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font-b);
+    background: var(--bg);
+    /* leve atmosfera: um brilho verde suave no topo */
+    background-image:
+      radial-gradient(900px 360px at 50% -120px, rgba(62,207,142,0.10), transparent 70%);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 48px 20px 80px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .app { width: 100%; max-width: 560px; }
+
+  /* ---------- Cabeçalho ---------- */
+  header { margin-bottom: 26px; }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-m);
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--green);
+    background: var(--green-dim);
+    border: 1px solid rgba(62,207,142,0.25);
+    padding: 5px 11px;
+    border-radius: 999px;
+    margin-bottom: 16px;
+  }
+  .brand .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); }
+
+  h1 {
+    font-family: var(--font-d);
+    font-size: 38px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    line-height: 1.05;
+  }
+  h1 span { color: var(--green); }
+  .subtitle { color: var(--muted); font-size: 15px; margin-top: 8px; }
+
+  /* ---------- Banner de configuração ---------- */
+  .setup {
+    display: none;
+    background: var(--warn-bg);
+    border: 1px solid var(--warn-line);
+    color: var(--warn-tx);
+    border-radius: 12px;
+    padding: 16px 18px;
+    margin-bottom: 22px;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .setup b { color: #ffe88a; }
+  .setup code {
+    font-family: var(--font-m);
+    background: rgba(0,0,0,0.35);
+    padding: 1px 6px;
+    border-radius: 5px;
+    font-size: 12.5px;
+  }
+
+  /* ---------- Formulário ---------- */
+  .form {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 22px;
+  }
+  input[type="text"] {
+    flex: 1;
+    font-family: var(--font-b);
+    font-size: 15px;
+    color: var(--text);
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 11px;
+    padding: 13px 15px;
+    outline: none;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  input[type="text"]::placeholder { color: #6a6a6a; }
+  input[type="text"]:focus {
+    border-color: var(--green-d);
+    box-shadow: 0 0 0 3px var(--green-dim);
+  }
+
+  button.add {
+    font-family: var(--font-m);
+    font-weight: 600;
+    font-size: 14px;
+    color: #0c2018;
+    background: var(--green);
+    border: none;
+    border-radius: 11px;
+    padding: 0 20px;
+    cursor: pointer;
+    transition: background .15s, transform .05s;
+    white-space: nowrap;
+  }
+  button.add:hover { background: var(--green-d); }
+  button.add:active { transform: translateY(1px); }
+  button.add:disabled { opacity: .5; cursor: default; }
+
+  /* ---------- Barra de status ---------- */
+  .bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--font-m);
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 12px;
+    padding: 0 2px;
+  }
+  .bar .count b { color: var(--green); }
+
+  /* ---------- Lista ---------- */
+  ul { list-style: none; display: flex; flex-direction: column; gap: 9px; }
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    background: var(--panel);
+    border: 1px solid var(--line-soft);
+    border-radius: 12px;
+    padding: 13px 15px;
+    animation: rise .35s ease both;
+  }
+  li:hover { border-color: var(--line); }
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .check {
+    appearance: none;
+    width: 21px; height: 21px;
+    flex-shrink: 0;
+    border: 2px solid #4a4a4a;
+    border-radius: 7px;
+    cursor: pointer;
+    position: relative;
+    transition: border-color .15s, background .15s;
+  }
+  .check:hover { border-color: var(--green); }
+  .check:checked { background: var(--green); border-color: var(--green); }
+  .check:checked::after {
+    content: "";
+    position: absolute;
+    left: 6px; top: 2px;
+    width: 5px; height: 10px;
+    border: solid #0c2018;
+    border-width: 0 2.5px 2.5px 0;
+    transform: rotate(45deg);
+  }
+
+  .titulo { flex: 1; font-size: 15px; transition: color .15s; word-break: break-word; }
+  li.done .titulo { color: var(--muted); text-decoration: line-through; }
+
+  .del {
+    background: none;
+    border: none;
+    color: #5a5a5a;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 6px;
+    transition: color .15s, background .15s;
+  }
+  .del:hover { color: var(--danger); background: rgba(241,100,108,0.1); }
+
+  /* ---------- Estados ---------- */
+  .state {
+    text-align: center;
+    color: var(--muted);
+    padding: 40px 10px;
+    font-size: 14px;
+  }
+  .state.err { color: var(--danger); }
+  .spinner {
+    width: 22px; height: 22px;
+    border: 2.5px solid var(--line);
+    border-top-color: var(--green);
+    border-radius: 50%;
+    margin: 0 auto 12px;
+    animation: spin .7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  footer {
+    margin-top: 34px;
+    text-align: center;
+    font-family: var(--font-m);
+    font-size: 11px;
+    color: #5a5a5a;
+    letter-spacing: .5px;
+  }
+</style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="brand"><span class="dot"></span> Powered by Supabase</div>
+      <h1>Minhas <span>Tarefas</span></h1>
+      <p class="subtitle">Lista simples conectada direto ao banco na nuvem.</p>
+    </header>
+
+    <div class="setup" id="setup">
+      <b>Falta configurar.</b> Abra este arquivo num editor e preencha
+      <code>SUPABASE_URL</code> e <code>SUPABASE_ANON_KEY</code> lá no topo do
+      <code>&lt;script&gt;</code>. Você pega os dois no painel do Supabase, no botão
+      verde <b>Connect</b> (ou em <b>Project Settings → API Keys</b>).
+    </div>
+
+    <div class="form">
+      <input type="text" id="input" placeholder="O que precisa ser feito?" autocomplete="off" />
+      <button class="add" id="addBtn">Adicionar</button>
+    </div>
+
+    <div class="bar">
+      <span class="count" id="count"></span>
+      <span id="status"></span>
+    </div>
+
+    <ul id="lista"></ul>
+    <div class="state" id="state"></div>
+
+    <footer>tarefas · select / insert / update / delete em "tarefas"</footer>
+  </div>
+
+<script>
+  /* =========================================================
+     1) CONFIGURACAO  —  PREENCHA COM OS DADOS DO SEU PROJETO
+     ---------------------------------------------------------
+     Pegue os dois valores abaixo no painel do Supabase,
+     clicando no botao verde "Connect" (no topo da pagina).
+
+     - SUPABASE_URL: a URL do seu projeto.
+         ex: https://xxxxxxxxxxxx.supabase.co
+     - SUPABASE_ANON_KEY: a chave PUBLICA do projeto.
+         ex: sb_publishable_xxxxxxxxxxxxxxxx
+         (e a chave de front-end; NAO use a service_role!)
+
+     Cole cada valor entre as aspas "" e salve o arquivo.
+     ========================================================= */
+  const SUPABASE_URL      = "";   // <-- cole aqui a URL do projeto
+  const SUPABASE_ANON_KEY = "";   // <-- cole aqui a chave publica (sb_publishable_...)
+
+  // Nome da tabela criada na aula
+  const TABELA = "tarefas";
+
+  /* ===== 2) Conexão ===== */
+  const configurado = SUPABASE_URL.trim() !== "" && SUPABASE_ANON_KEY.trim() !== "";
+  const { createClient } = window.supabase || {};     // global vem do CDN
+  const db = (configurado && createClient) ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+  /* ===== 3) Elementos da tela ===== */
+  const input   = document.getElementById("input");
+  const addBtn  = document.getElementById("addBtn");
+  const lista   = document.getElementById("lista");
+  const stateEl = document.getElementById("state");
+  const countEl = document.getElementById("count");
+  const statusEl= document.getElementById("status");
+
+  function setStatus(msg) {
+    statusEl.textContent = msg || "";
+    if (msg) setTimeout(() => (statusEl.textContent = ""), 2000);
+  }
+
+  /* ===== 4) Operações no banco (a "API automática") ===== */
+
+  // LISTAR: select * from tarefas order by created_at
+  async function carregar() {
+    stateEl.textContent = "";
+    stateEl.innerHTML = '<div class="spinner"></div>Carregando...';
+    const { data, error } = await db
+      .from(TABELA)
+      .select("*")
+      .order("created_at", { ascending: true });
+
+    if (error) return mostrarErro(error);
+    desenhar(data || []);
+  }
+
+  // INSERIR: insert into tarefas (titulo) values (...)
+  async function adicionar() {
+    const titulo = input.value.trim();
+    if (!titulo) return;
+    addBtn.disabled = true;
+    const { error } = await db.from(TABELA).insert({ titulo });
+    addBtn.disabled = false;
+    if (error) return setStatus("Erro ao adicionar");
+    input.value = "";
+    setStatus("Adicionada ✓");
+    carregar();
+  }
+
+  // ATUALIZAR: update tarefas set concluida = ? where id = ?
+  async function alternar(id, concluida) {
+    const { error } = await db.from(TABELA).update({ concluida }).eq("id", id);
+    if (error) { setStatus("Erro ao atualizar"); carregar(); }
+  }
+
+  // APAGAR: delete from tarefas where id = ?
+  async function apagar(id) {
+    const { error } = await db.from(TABELA).delete().eq("id", id);
+    if (error) return setStatus("Erro ao apagar");
+    setStatus("Removida");
+    carregar();
+  }
+
+  /* ===== 5) Render ===== */
+  function desenhar(tarefas) {
+    lista.innerHTML = "";
+    stateEl.textContent = "";
+
+    const pendentes = tarefas.filter(t => !t.concluida).length;
+    countEl.innerHTML = tarefas.length
+      ? `<b>${pendentes}</b> pendente(s) de ${tarefas.length}`
+      : "";
+
+    if (!tarefas.length) {
+      stateEl.textContent = "Nenhuma tarefa ainda. Adicione a primeira acima!";
+      return;
+    }
+
+    tarefas.forEach((t, i) => {
+      const li = document.createElement("li");
+      if (t.concluida) li.classList.add("done");
+      li.style.animationDelay = (i * 0.04) + "s";
+
+      const chk = document.createElement("input");
+      chk.type = "checkbox";
+      chk.className = "check";
+      chk.checked = !!t.concluida;
+      chk.addEventListener("change", () => {
+        li.classList.toggle("done", chk.checked);
+        alternar(t.id, chk.checked);
+      });
+
+      const span = document.createElement("span");
+      span.className = "titulo";
+      span.textContent = t.titulo;
+
+      const del = document.createElement("button");
+      del.className = "del";
+      del.innerHTML = "&times;";
+      del.title = "Apagar";
+      del.addEventListener("click", () => apagar(t.id));
+
+      li.append(chk, span, del);
+      lista.appendChild(li);
+    });
+  }
+
+  function mostrarErro(error) {
+    lista.innerHTML = "";
+    countEl.textContent = "";
+    stateEl.className = "state err";
+    stateEl.innerHTML =
+      "Não consegui ler o banco.<br>" +
+      "<small style='color:#8b8b8b'>" +
+      (error.message || "") +
+      "<br>Dica: tabelas novas têm RLS ligada — pode faltar uma policy de acesso.</small>";
+  }
+
+  /* ===== 6) Eventos e início ===== */
+  addBtn.addEventListener("click", adicionar);
+  input.addEventListener("keydown", e => { if (e.key === "Enter") adicionar(); });
+
+  if (!configurado) {
+    document.getElementById("setup").style.display = "block";
+    stateEl.textContent = "Configure suas chaves para começar.";
+  } else {
+    carregar();
+  }
+</script>
+</body>
+</html>
