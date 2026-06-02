@@ -32,8 +32,6 @@ create policy "demo_update"  on tarefas for update using (true);
 create policy "demo_delete"  on tarefas for delete using (true);
 ```
 
-> ⚠️ Isso deixa a tabela aberta a qualquer um com a URL. Serve **só para teste/demo**,
-> não para produção.
 
 ### 4. Configure o arquivo
 Baixe o **`tarefas.html`** deste repositório, abra num editor e preencha as
@@ -49,11 +47,7 @@ Você pega os dois valores no painel do Supabase, no botão verde **Connect**
 
 > 🔑 Use a chave **pública** (`sb_publishable_...`).
 
-### 5. Abra o app
-Dê um **duplo clique** no `tarefas.html`. Ele abre no navegador e já mostra,
-adiciona, conclui e apaga tarefas — tudo gravando no seu banco. 🎉
 
----
 
 ## ⚠️ Problemas comuns
 
